@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AstraAnime - Premium Streaming</title>
+    
+    <!-- React & ReactDOM */
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Babel for JSX */
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS */
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Framer Motion */
+    <script src="https://unpkg.com/framer-motion@10.12.4/dist/framer-motion.js"></script>
+    
+    <!-- Lucide Icons */
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Tailwind Config */
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#ec4897',
+                        dark: '#0f172a',
+                        card: '#1e293b',
+                    },
+                    backgroundImage: {
+                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                        'hero-gradient': 'linear-gradient(to top, #0f172a 0%, #0f172a 40%, transparent 100%)',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            background-color: #0f172a;
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        
+        /* Glassmorphism */
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .glass-card {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .glass-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(99, 102, 241, 0.5);
+            box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+        const { motion, AnimatePresence } = window.Motion;
+        
+        // Mock Data Database
+        const MOCK_ANIME_DB = [
+            {
+                id: 1,
+                title: "Cyberpunk: Edgerunners",
+                description: "In a dystopian future, a street kid tries to survive in a technology and body modification-obsessed city. Trying to become an edgerunner - a mercenary outlaw also known as a cyberpunk.",
+                image: "https://images.alphacoders.com/124/1248107.jpeg",
+                banner: "https://images.alphacoders.com/124/1248107.jpeg",
+                rating: 9.8,
+                year: 2022,
+                status: "Completed",
+                type: "TV",
+                genres: ["Action", "Sci-Fi", "Cyberpunk"],
+                episodes: Array.from({ length: 10 }, (_, i) => ({
+                    number: i + 1,
+                    title: `Episode ${i + 1}`,
+                    videoUrl: "https://www.youtube.com/embed/jH7FRCz5j8w" // Placeholder
+                }))
+            },
+            {
+                id: 2,
+                title: "Jujutsu Kaisen",
+                description: "A boy swallows a cursed talisman - the finger of a demon - and becomes cursed himself. He enters a shaman school to be able to locate the demon's other body parts and thus exorcise himself.",
+                image: "https://images.alphacoders.com/131/1318565.jpeg",
+                banner: "https://images.alphacoders.com/131/1318565.jpeg",
+                rating: 9.5,
+                year: 2020,
+                status: "Ongoing",
+                type: "TV",
+                genres: ["Action", "Sup supernatural", "School"],
+                episodes: Array.from({ length: 24 }, (_, i) => ({
+                    number: i + 1,
+                    title: `Episode ${i + 1}`,
+                    videoUrl: "https://www.youtube.com/embed/4A7-D0gX6gQ"
+                }))
+            },
+            {
+                id: 3,
+                title: "One Piece",
+                description: "Follows the adventures of Monkey D. Luffy and his pirate crew in order to find the greatest treasure ever left by the legendary Pirate, Gold Roger. The famous mystery treasure named 'One Piece'.",
+                image: "https://images.alphacoders.com/133/1338020.jpeg",
+                banner: "https://images.alphacoders.com/133/1338020.jpeg",
+                rating: 9.9,
+                year: 1999,
+                status: "Ongoing",
+                type: "TV",
+                genres: ["Action", "Adventure", "Comedy"],
+                episodes: Array.from({ length: 1000 }, (_, i) => ({
+                    number: i + 1,
+                    title: `Episode ${i + 1}`,
+                    videoUrl: "https://www.youtube.com/embed/Ades3pQbeh8"
+                }))
+            },
+            {
+                id: 4,
+                title: "Demon Slayer",
+                description: "A family is attacked by demons and only two members survive - Tanjiro and his sister Nezuko, who is turning into a demon slowly. Tanjiro sets out to become a demon slayer to avenge his family and cure his sister.",
+                image: "https://images.alphacoders.com/133/1338020.jpeg",
+                banner: "https://images.alphacoders.com/133/1338020.jpeg",
+                rating: 9.7,
+                year: 2019,
+                status: "Ongoing",
+                type: "TV",
+                genres: ["Action", "Historical", "Sup supernatural"],
+                episodes: Array.from({ length: 26 }, (_, i) => ({
+                    number: i + 1,
+                    title: `Episode ${i + 1}`,
+                    videoUrl: "https://www.youtube.com/embed/VQGCKyvzIM4"
+                }))
+            },
+            {
+                id: 5,
+                title: "Attack on Titan",
+                description: "After his hometown is destroyed and his mother is killed, young Eren Jaeger vows to cleanse the earth of the giant humanoid Titans that have brought humanity to the brink of extinction.",
+                image: "https://images.alphacoders.com/133/1338020.jpeg",
+                banner: "https://images.alphacoders.com/133/1338020.jpeg",
+                rating: 9.9,
+                year: 2013,
+                status: "Completed",
+                type: "TV",
+                genres: ["Action", "Drama", "Fantasy"],
+                episodes: Array.from({ length: 25 }, (_, i) => ({
+                    number: i + 1,
+                    title: `Episode ${i + 1}`,
+                    videoUrl: "https://www.youtube.com/embed/MGRm4IzK1SQ"
+                }))
+            },
+            {
+                id: 6,
+                title: "Spy x Family",
+                description: "A spy on an undercover mission gets married and adopts a child as part of his cover. His wife and daughter have secrets of their own, and all three must strive to keep together.",
+                image: "https://images.alphacoders.com/133/1338020.jpeg",
+                banner: "https://images.alphacoders.com/133/1338020.jpeg",
+                rating: 9.6,
+                year: 2022,
+                status: "Ongoing",
+                type: "TV",
+                genres: ["Action", "Comedy", "Family"],
+                episodes: Array.from({ length: 12 }, (_, i) => ({
+                    number: i + 1,
+                    title: `Episode ${i + 1}`,
+                    videoUrl: "https://www.youtube.com/embed/6v9z7vX6z8w"
+                }))
+            }
+        ];
+
+        // Icons Component
+        const Icon = ({ name, size = 24, className = "" }) {
+            useEffect(() => {
+                lucide.createIcons();
+            }, [name]);
+            return <i className={`lucide-${name}`} data-lucide={name} style={{ width: size, height: size }} className={className}></i>;
+        };
+
+        // Navigation Component
+        const Navbar = ({ onSearch, onNavigate }) {
+            const [searchQuery, setSearchQuery] = useState("");
+            const [isScrolled, setIsScrolled] = useState(false);
+
+            useEffect(() => {
+                const handleScroll = () => {
+                    setIsScrolled(window.scrollY > 50);
+                };
+                window.addEventListener('scroll', handleScroll);
+                return () => window.removeEventListener('scroll', handleScroll);
+            }, []);
+
+            const handleSearch = (e) => {
+                e.preventDefault();
+                if (searchQuery.trim()) {
+                    onSearch(searchQuery);
+                }
+            };
+
+            return (
+                <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'glass py-3' : 'bg-transparent py-6'}`}>
+                    <div className="container mx-auto px-4 flex items-center justify-between">
+                        <div className="flex items-center gap-8">
+                            <motion.div 
+                                whileHover={{ scale: 1.05 }}
+                                className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent cursor-pointer"
+                                onClick={() => onNavigate('home')}
+                            >
+                                AstraAnime
+                            </motion.div>
+                            <div className="hidden md:flex items-center gap-6">
+                                {['Home', 'Anime', 'Movies', 'Popular', 'Genres'].map((item) => (
+                                    <button
+                                        key={item}
+                                        onClick={() => onNavigate(item.toLowerCase())}
+                                        className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
+                                    >
+                                        {item}
+                                    </button>
+                                ))
+                                }
+                            </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-4">
+                            <form onSubmit={handleSearch} className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="Search anime..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="glass px-4 py-2 pl-10 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary w-40 md:w-64 transition-all"
+                                />
+                                <Icon name="search" size={16} className="absolute left-3 top-2.5 text-gray-400" />
+                            </form>
+                            <button className="glass p-2 rounded-full hover:bg-primary/20 transition-colors">
+                                <Icon name="user" size={20} />
+                            </button>
+                        </div>
+                    </div>
+                </nav>
+            );
+        };
+
+        // Hero Section
+        const HeroSection = ({ anime, onWatch }) => {
+            return (
+                <div className="relative h-[80vh] w-full overflow-hidden">
+                    <div 
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{ backgroundImage: `url(${anime.banner})` }}
+                    />
+                    <div className="absolute inset-0 bg-hero-gradient" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-dark via-dark/80 to-transparent" />
+                    
+                    <div className="container mx-auto px-4 h-full flex items-center">
+                        <div className="max-w-2xl">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.8 }}
+                            >
+                                <span className="bg-primary/20 text-primary px-3 py-1 rounded-full text-sm font-medium mb-4 inline-block">
+                                    #1 Trending
+                                </span>
+                                <h1 className="text-5xl md:text-7xl font-bold mb-4 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+                                    {anime.title}
+                                </h1>
+                                <p className="text-gray-300 text-lg mb-8 line-clamp-3">
+                                    {anime.description}
+                                </p>
+                                <div className="flex items-center gap-4">
+                                    <button
+                                        onClick={() => onWatch(anime)}
+                                        className="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-full font-medium flex items-center gap-2 transition-all hover:scale-105"
+                                    >
+                                        <Icon name="play" size={20} />
+                                        Watch Now
+                                    </button>
+                                    <button className="glass hover:bg-white/10 text-white px-8 py-3 rounded-full font-medium transition-all">
+                                        + Add to List
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Anime Card Component
+        const AnimeCard = ({ anime, onClick }) => {
+            return (
+                <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    className="glass-card rounded-xl overflow-hidden cursor-pointer group"
+                    onClick={() => onClick(anime)}
+                >
+                    <div className="relative aspect-[2/3] overflow-hidden">
+                        <img
+                            src={anime.image}
+                            alt={anime.title}
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-dark via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="absolute bottom-0 left-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button className="w-full bg-primary hover:bg-primary/90 text-white py-2 rounded-lg font-medium flex items-center justify-center gap-2">
+                                <Icon name="play" size={16} />
+                                Watch
+                            </button>
+                        </div>
+                        <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm px-2 py-1 rounded text-xs font-medium">
+                            {anime.type}
+                        </div>
+                    </div>
+                    <div className="p-4">
+                        <h3 className="font-semibold text-lg mb-1 line-clamp-1 group-hover:text-primary transition-colors">
+                            {anime.title}
+                        </h3>
+                        <div className="flex items-center justify-between text-sm text-gray-400">
+                            <span>{anime.year}</span>
+                            <div className="flex items-center gap-1">
+                                <Icon name="star" size={14} className="text-yellow-500" />
+                                <span>{anime.rating}</span>
+                            </div>
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                            {anime.genres.slice(0, 2).map((genre, index) => (
+                                <span key={index} className="text-xs px-2 py-1 bg-white/5 rounded-full text-gray-400">
+                                    {genre}
+                                </span>
+                            ))
+                            }
+                        </div>
+                    </div>
+                </motion.div>
+            );
+        };
+
+        // Video Player Component
+        const VideoPlayer = ({ episode, onNext }) => {
+            const [isFullscreen, setIsFullscreen] = useState(false);
+            const playerRef = useRef(null);
+
+            const toggleFullscreen = () => {
+                if (!document.fullscreenElement) {
+                    playerRef.current.requestFullscreen();
+                    setIsFullscreen(true);
+                } else {
+                    document.exitFullscreen();
+                    setIsFullscreen(false);
+                }
+            };
+
+            return (
+                <div ref={playerRef} className="relative aspect-video bg-black rounded-xl overflow-hidden group">
+                    <iframe
+                        src={episode.videoUrl}
+                        className="w-full h-full"
+                        frameBorder="0"
+                        allowFullScreen
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <button
+                            onClick={toggleFullscreen}
+                            className="bg-black/70 hover:bg-primary p-3 rounded-full transition-colors"
+                        >
+                            <Icon name="maximize" size={24} />
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        // Main App Component
+        const App = () => {
+            const [currentPage, setCurrentPage] = useState('home');
+            const [selectedAnime, setSelectedAnime] = useState(null);
+            const [searchQuery, setSearchQuery] = useState('');
+            const [watchHistory, setWatchHistory] = useState([]);
+            const [filteredAnime, setFilteredAnime] = useState(MOCK_ANIME_DB);
+
+            useEffect(() => {
+                if (searchQuery) {
+                    const filtered = MOCK_ANIME_DB.filter(anime =>
+                        anime.title.toLowerCase().includes(searchQuery.toLowerCase())
+                    );
+                    setFilteredAnime(filtered);
+                    setCurrentPage('search');
+                }
+            }, [searchQuery]);
+
+            const handleNavigation = (page) => {
+                setCurrentPage(page);
+                setSelectedAnime(null);
+                setSearchQuery('');
+                window.scrollTo(0, 0);
+            };
+
+            const handleAnimeSelect = (anime) => {
+                setSelectedAnime(anime);
+                setCurrentPage('anime');
+                window.scrollTo(0, 0);
+            };
+
+            const handleWatch = (anime) => {
+                setSelectedAnime(anime);
+                setCurrentPage('watch');
+                window.scrollTo(0, 0);
+            };
+
+            const renderContent = () => {
+                if (selectedAnime && currentPage === 'anime') {
+                    return (
+                        <div className="container mx-auto px-4 py-20">
+                            <div className="max-w-6xl mx-auto">
+                                <div className="relative aspect-[16/9] rounded-2xl overflow-hidden mb-8">
+                                    <img
+                                        src={selectedAnime.banner}
+                                        alt={selectedAnime.title}
+                                        className="w-full h-full object-cover"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/50 to-transparent" />
+                                    <div className="absolute bottom-0 left-0 right-0 p-8">
+                                        <h1 className="text-4xl font-bold mb-4">{selectedAnime.title}</h1>
+                                        <div className="flex items-center gap-4 mb-4">
+                                            <span className="bg-primary/20 text-primary px-3 py-1 rounded-full text-sm">
+                                                {selectedAnime.type}
+                                            </span>
+                                            <span className="text-gray-400">{selectedAnime.year}</span>
+                                            <div className="flex items-center gap-1">
+                                                <Icon name="star" size={16} className="text-yellow-500" />
+                                                <span>{selectedAnime.rating}</span>
+                                            </div>
+                                        </div>
+                                        <p className="text-gray-300 max-w-3xl mb-6">{selectedAnime.description}</p>
+                                        <button
+                                            onClick={() => handleWatch(selectedAnime)}
+                                            className="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-full font-medium flex items-center gap-2 transition-all hover:scale-105"
+                                        >
+                                            <Icon name="play" size={20} />
+                                            Start Watching
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                    <div className="lg:col-span-2">
+                                        <h2 className="text-2xl font-bold mb-6">Episodes</h2>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                            {selectedAnime.episodes.map((episode) => (
+                                                <div
+                                                    key={episode.number}
+                                                    className="glass-card p-4 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors"
+                                                    onClick={() => handleWatch(selectedAnime)}
+                                                >
+                                                    <div className="aspect-video bg-gray-800 rounded-lg mb-3 flex items-center justify-center">
+                                                        <Icon name="play" size={32} className="text-gray-600" />
+                                                    </div>
+                                                    <h3 className="font-medium">{episode.title}</h3>
+                                                    <p className="text-sm text-gray-400">Episode {episode.number}</p>
+                                                </div>
+                                            ))
+                                            }
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h2 className="text-2xl font-bold mb-6">Details</h2>
+                                        <div className="glass-card p-6 rounded-xl">
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <h3 className="text-gray-400 text-sm mb-1">Genres</h3>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {selectedAnime.genres.map((genre, index) => (
+                                                            <span key={index} className="px-3 py-1 bg-white/5 rounded-full text-sm">
+                                                                {genre}
+                                                            </span>
+                                                        ))
+                                                        }
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-gray-400 text-sm mb-1">Status</h3>
+                                                    <p>{selectedAnime.status}</p>
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-gray-400 text-sm mb-1">Release Year</h3>
+                                                    <p>{selectedAnime.year}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                }
+
+                if (selectedAnime && currentPage === 'watch') {
+                    return (
+                        <div className="container mx-auto px-4 py-20">
+                            <div className="max-w-6xl mx-auto">
+                                <VideoPlayer 
+                                    episode={selectedAnime.episodes[0]} 
+                                    onNext={() => {}}
+                                />
+                                <div className="mt-8">
+                                    <h1 className="text-3xl font-bold mb-4">{selectedAnime.title}</h1>
+                                    <p className="text-gray-400 mb-8">Episode 1 - {selectedAnime.title} Episode 1</p>
+                                    
+                                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                                        <div className="lg:col-span-3">
+                                            <h2 className="text-2xl font-bold mb-6">Up Next</h2>
+                                            <div className="space-y-4">
+                                                {selectedAnime.episodes.slice(1, 5).map((episode) => (
+                                                    <div
+                                                        key={episode.number}
+                                                        className="glass-card p-4 rounded-xl flex gap-4 cursor-pointer hover:bg-primary/10 transition-colors"
+                                                    >
+                                                        <div className="w-40 aspect-video bg-gray-800 rounded-lg flex-shrink-0 flex items-center justify-center">
+                                                            <Icon name="play" size={24} className="text-gray-600" />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <h3 className="font-medium mb-1">{episode.title}</h3>
+                                                            <p className="text-sm text-gray-400">Episode {episode.number}</p>
+                                                            <p className="text-sm text-gray-500 mt-2">24m</p>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                                }
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h2 className="text-xl font-bold mb-4">Related Anime</h2>
+                                            <div className="space-y-4">
+                                                {MOCK_ANIME_DB.filter(a => a.id !== selectedAnime.id).slice(0, 3).map(anime => (
+                                                    <div
+                                                        key={anime.id}
+                                                        className="glass-card p-3 rounded-xl flex gap-3 cursor-pointer hover:bg-primary/10 transition-colors"
+                                                        onClick={() => handleAnimeSelect(anime)}
+                                                    >
+                                                        <img
+                                                            src={anime.image}
+                                                            alt={anime.title}
+                                                            className="w-20 h-28 object-cover rounded-lg flex-shrink-0"
+                                                        />
+                                                        <div>
+                                                            <h3 className="font-medium text-sm line-clamp-2">{anime.title}</h3>
+                                                            <p className="text-xs text-gray-400 mt-1">{anime.year}</p>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                }
+
+                if (currentPage === 'search') {
+                    return (
+                        <div className="container mx-auto px-4 py-20">
+                            <h1 className="text-3xl font-bold mb-8">Search Results</h1>
+                            {filteredAnime.length === 0 ? (
+                                <div className="text-center py-20">
+                                    <Icon name="search" size={64} className="mx-auto mb-4 text-gray-600" />
+                                    <h2 className="text-2xl font-bold mb-2">No results found</h2>
+                                    <p className="text-gray-400">Try searching for something else</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                    {filteredAnime.map(anime => (
+                                        <AnimeCard key={anime.id} anime={anime} onClick={handleAnimeSelect} />
+                                    ))
+                                    }
+                                </div>
+                            )
+                            }
+                        </div>
+                    );
+                }
+
+                // Default Home Page
+                const trendingAnime = MOCK_ANIME_DB;
+                const latestEpisodes = MOCK_ANIME_DB;
+
+                return (
+                    <>
+                        <HeroSection anime={MOCK_ANIME_DB[0]} onWatch={handleWatch} />
+                        
+                        <div className="container mx-auto px-4 py-20">
+                            <section className="mb-20">
+                                <div className="flex items-center justify-between mb-8">
+                                    <h2 className="text-3xl font-bold">Trending Now</h2>
+                                    <button className="text-primary hover:text-primary/80 transition-colors flex items-center gap-2">
+                                        View All <Icon name="arrow-right" size={16} />
+                                    </button>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                    {trendingAnime.map(anime => (
+                                        <AnimeCard key={anime.id} anime={anime} onClick={handleAnimeSelect} />
+                                    ))
+                                    }
+                                </div>
+                            </section>
+
+                            <section className="mb-20">
+                                <div className="flex items-center justify-between mb-8">
+                                    <h2 className="text-3xl font-bold">Latest Episodes</h2>
+                                    <button className="text-primary hover:text-primary/80 transition-colors flex items-center gap-2">
+                                        View All <Icon name="arrow-right" size={16} />
+                                    </button>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                    {latestEpisodes.map(anime => (
+                                        <AnimeCard key={anime.id} anime={anime} onClick={handleAnimeSelect} />
+                                    ))
+                                    }
+                                </div>
+                            </section>
+
+                            <section className="mb-20">
+                                <div className="flex items-center justify-between mb-8">
+                                    <h2 className="text-3xl font-bold">Popular This Season</h2>
+                                    <button className="text-primary hover:text-primary/80 transition-colors flex items-center gap-2">
+                                        View All <Icon name="arrow-right" size={16} />
+                                    </button>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                    {MOCK_ANIME_DB.slice().reverse().map(anime => (
+                                        <AnimeCard key={anime.id} anime={anime} onClick={handleAnimeSelect} />
+                                    ))
+                                    }
+                                </div>
+                            </section>
+                        </div>
+                    </>
+                );
+            };
+
+            return (
+                <div className="min-h-screen bg-dark">
+                    <Navbar onSearch={setSearchQuery} onNavigate={handleNavigation} />
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={currentPage}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                        >
+                            {renderContent()}
+                        </motion.div>
+                    </AnimatePresence>
+                    
+                    <footer className="bg-card py-12 mt-20">
+                        <div className="container mx-auto px-4">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                                <div>
+                                    <h3 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-4">
+                                        AstraAnime
+                                    </h3>
+                                    <p className="text-gray-400">
+                                        Premium anime streaming platform with the latest episodes and movies.
+                                    </p>
+                                </div>
+                                <div>
+                                    <h4 className="font-bold mb-4">Quick Links</
